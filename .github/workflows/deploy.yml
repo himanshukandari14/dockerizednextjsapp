@@ -62,9 +62,9 @@ jobs:
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
             EOL
 
-            # Stop and remove old containers to prevent ContainerConfig errors
-            docker compose down --remove-orphans
+            # Stop and remove old containers
+            docker-compose down --remove-orphans
 
-            # Build and run Docker with PM2 managing Next.js
-            docker compose build --no-cache
-            docker compose up -d --remove-orphans
+            # Build and run
+            docker-compose build --no-cache
+            docker-compose up -d --remove-orphans
