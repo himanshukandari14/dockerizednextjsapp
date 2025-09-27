@@ -32,6 +32,5 @@ ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 # Build Next.js with env available
 RUN npm run build
 
-# Start app
-
-CMD ["pm2-runtime", "dist/index.js"]
+# Start Next.js with PM2 runtime
+CMD ["pm2-runtime", "npm", "--", "start"]
