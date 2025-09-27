@@ -33,9 +33,11 @@ jobs:
               sudo systemctl start docker
             fi
 
-            # Install Docker Compose v2 plugin if not installed
-            if ! docker compose version &> /dev/null; then
-              sudo apt-get install -y docker-compose-plugin
+            # Install Docker Compose v1 if not installed
+            if ! command -v docker-compose &> /dev/null; then
+              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" \
+                -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
             fi
 
             # Navigate to home
@@ -62,9 +64,9 @@ jobs:
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
             EOL
 
-            # Stop and remove old containers
+            # Stop and remove old containers to avoid errors
             docker-compose down --remove-orphans
 
-            # Build and run
+            # Build and run Docker with PM2 managing Next.js
             docker-compose build --no-cache
             docker-compose up -d --remove-orphans
