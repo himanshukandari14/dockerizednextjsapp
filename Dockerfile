@@ -1,0 +1,37 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Copy package files first to leverage caching
+COPY package.json package-lock.json ./
+
+RUN npm install
+
+# Install PM2 globally inside the container
+RUN npm install -g pm2
+
+
+# Copy all source code
+COPY . .
+
+# Make env available at build time
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ARG CLERK_SECRET_KEY
+ARG NEXT_PUBLIC_CLERK_SIGN_IN_URL
+ARG NEXT_PUBLIC_CLERK_SIGN_UP_URL
+ARG LIVEBLOCKS_SECRET_KEY
+ARG SENTRY_AUTH_TOKEN
+
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ENV CLERK_SECRET_KEY=$CLERK_SECRET_KEY
+ENV NEXT_PUBLIC_CLERK_SIGN_IN_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_URL
+ENV NEXT_PUBLIC_CLERK_SIGN_UP_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_URL
+ENV LIVEBLOCKS_SECRET_KEY=$LIVEBLOCKS_SECRET_KEY
+ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+
+# Build Next.js with env available
+RUN npm run build
+
+# Start app
+
+CMD ["pm2-runtime", "dist/index.js"]
