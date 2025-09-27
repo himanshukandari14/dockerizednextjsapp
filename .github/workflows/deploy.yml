@@ -33,11 +33,9 @@ jobs:
               sudo systemctl start docker
             fi
 
-            # Install docker-compose v1 (standalone binary)
-            if ! command -v docker-compose &> /dev/null; then
-              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" \
-                -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
+            # Install Docker Compose v2 plugin if not installed
+            if ! docker compose version &> /dev/null; then
+              sudo apt-get install -y docker-compose-plugin
             fi
 
             # Navigate to home
@@ -47,6 +45,7 @@ jobs:
             if [ -d "dockerizednextjsapp" ]; then
               cd dockerizednextjsapp
               git reset --hard
+              git config pull.rebase false
               git pull origin main
             else
               git clone https://github.com/himanshukandari14/dockerizednextjsapp.git
@@ -63,6 +62,9 @@ jobs:
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
             EOL
 
-            # Build and run Docker
-            docker-compose build
-            docker-compose up -d --remove-orphans
+            # Stop and remove old containers to prevent ContainerConfig errors
+            docker compose down --remove-orphans
+
+            # Build and run Docker with PM2 managing Next.js
+            docker compose build --no-cache
+            docker compose up -d --remove-orphans
